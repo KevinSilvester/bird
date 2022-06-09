@@ -1,5 +1,5 @@
 # Bird
 
-A installation organizer of sorts.
+An installation organizer of sorts.
 
 

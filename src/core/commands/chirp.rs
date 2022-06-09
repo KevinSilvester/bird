@@ -1,13 +1,14 @@
 use super::command::Command;
 use crate::core::BirdConfig;
 use crate::utils::colour;
-use anyhow::Result;
+use crate::utils::errors::BirdError;
+// use anyhow::Result;
 
 #[derive(clap::Parser, Debug)]
 pub struct Chirp;
 
 impl Command for Chirp {
-   fn call(self, config: &BirdConfig) -> Result<()> {
+   fn call(self, config: &BirdConfig) -> Result<(), BirdError> {
       let ascii = r#"                                                                                                          ^~.                                           
                                                                                                         !. !J7.                                         
   _____  _                     ____   _           _                                                     7J!^?J?^?                                       

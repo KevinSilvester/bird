@@ -1,11 +1,6 @@
-use anyhow::Result;
-use std::path::{Path};
+// use anyhow::Result;
 use std::env;
-
-   // const root_dir: String = match env::var("BIRD_TREE") {
-   //    Ok(val) => val,
-   //    Err(_) => return Err(BirdError::MissingEnvVar(env::VarError::NotPresent))
-   // };
+use crate::utils::errors::BirdError;
 
 #[derive(Debug, Clone)]
 pub struct BirdConfig {
@@ -15,9 +10,10 @@ pub struct BirdConfig {
 }
 
 impl BirdConfig {
-   pub fn new() -> Result<Self> {
-      
+   pub fn new() -> Result<Self, BirdError> {
       let root_dir: String = env::var("BIRD_TREE")?;
+
+      // let root_dir = "/home/wsl1/__root__".to_owned();
 
       Ok(Self {
          root_dir: root_dir.clone(),

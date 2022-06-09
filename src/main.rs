@@ -1,14 +1,23 @@
 mod core;
 mod utils;
 
-use anyhow::Result;
+// use anyhow::Result;
 use crate::core::{BirdConfig, BirdCli};
+use crate::utils::errors::BirdError;
+use clap::Parser;
 
-fn main() -> Result<()> {
+fn main(){
+   match run_main() {
+      Ok(_) => (),
+      Err(err) => println!("{}", err),
+   }
+}
+
+fn run_main() -> Result<(), BirdError>  {
    let config = BirdConfig::new()?;
-   let value = crate::core::parse();
-   println!("{:?}", value);
+   let values = BirdCli::parse();
+   println!("{:?}", values);
 
-   value.subcmd.call(config);
+   values.subcmd.call(config)?;
    Ok(())
 }
