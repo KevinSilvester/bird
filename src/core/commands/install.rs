@@ -59,16 +59,16 @@ impl Install {
    fn install_selected(self, eggs: &Eggs, nest: &mut Nest, config: &BirdConfig) -> Result<(), BirdError> {
       let mut invalid_eggs = Vec::new();
 
-      for (key, value) in &eggs.eggs {
-         match self.programs.iter().any(|i| &i == &key) {
-            true => match nest.nest.contains_key(&key.to_owned()) {
-               true => println!("\n{}", colour::warn(&format!("{} is already installed", key))),
-               false => match Self::install_program(&value.clone(), &eggs, nest, &config) {
+      for program in self.programs {
+         match nest.nest.contains_key(&program) {
+            true => println!("\n{}", colour::warn(&format!("{} is already installed", program))),
+            false => match eggs.eggs.get(&program) {
+               Some(e) => match Self::install_program(&e, &eggs, nest, &config) {
                   Ok(_) => (),
                   Err(e) => println!("{}", &e),
                },
+               None => invalid_eggs.push(program),
             },
-            false => invalid_eggs.push(key.clone()),
          }
       }
 
