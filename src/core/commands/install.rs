@@ -102,7 +102,7 @@ impl Install {
                               Ok(_) => {
                                  nest.append(&ee.name, &config).unwrap();
                               }
-                              Err(_err) => {
+                              Err(_) => {
                                  return Err(format!(
                                     "\n{}\n{}",
                                     colour::error(&format!("Installation of dependency {} failed", &d)),
@@ -126,7 +126,7 @@ impl Install {
                Ok(_) => {
                   nest.append(&egg.name, &config).unwrap();
                }
-               Err(_err) => {
+               Err(_) => {
                   return Err(format!(
                      "\n{}\n{}",
                      colour::error(&format!("Installation of {} failed", &egg.name)),
@@ -139,7 +139,7 @@ impl Install {
             Ok(_) => {
                nest.append(&egg.name, &config).unwrap();
             }
-            Err(_err) => {
+            Err(_) => {
                return Err(format!(
                   "\n{}\n{}",
                   colour::error(&format!("Installation of {} failed", &egg.name)),
