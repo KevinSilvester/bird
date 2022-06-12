@@ -1,6 +1,6 @@
 use super::colour;
-use std::fmt;
 use serde_json::error::Category;
+use std::fmt;
 
 #[derive(Debug)]
 pub enum BirdError {
@@ -31,14 +31,8 @@ impl fmt::Display for BirdError {
             colour::error("Error"),
             programs.join(", ")
          ),
-         &BirdError::JsonError((ref file, ref msg )) => {
-            writeln!(
-               f,
-               "{}: {} - {}",
-               colour::error("JsonError"),
-               colour::warn(file),
-               msg
-            )
+         &BirdError::JsonError((ref file, ref msg)) => {
+            writeln!(f, "{}: {} - {}", colour::error("JsonError"), colour::warn(file), msg)
          }
          &BirdError::CommandFailed(ref str) => {
             writeln!(

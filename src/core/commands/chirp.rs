@@ -2,7 +2,6 @@ use super::command::Command;
 use crate::core::BirdConfig;
 use crate::utils::colour;
 use crate::utils::errors::BirdError;
-// use anyhow::Result;
 
 #[derive(clap::Parser, Debug)]
 pub struct Chirp;

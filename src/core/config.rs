@@ -1,11 +1,11 @@
 // use anyhow::Result;
-use std::env;
 use crate::utils::errors::BirdError;
+use std::env;
 
 #[derive(Debug, Clone)]
 pub struct BirdConfig {
    pub root_dir: String,
-   pub egg_file: String,
+   pub eggs_file: String,
    pub nest_file: String,
 }
 
@@ -17,7 +17,7 @@ impl BirdConfig {
 
       Ok(Self {
          root_dir: root_dir.clone(),
-         egg_file: root_dir.clone() + "/.bird-eggs.json",
+         eggs_file: root_dir.clone() + "/.bird-eggs.json",
          nest_file: root_dir.clone() + "/.bird-nest.json",
       })
    }

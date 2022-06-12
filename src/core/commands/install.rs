@@ -1,10 +1,6 @@
-use std::collections::HashMap;
-
 use super::command::Command;
-use crate::core::{BirdConfig , Egg};
-use crate::utils::errors::BirdError;
-use crate::utils::{colour, files, iter_hashmap};
-// use anyhow::Result;
+use crate::core::{BirdConfig, EggItem, Eggs, Nest};
+use crate::utils::{colour, errors::BirdError};
 
 #[derive(clap::Parser, Debug)]
 pub struct Install {
@@ -23,95 +19,135 @@ pub struct Install {
 
 impl Command for Install {
    fn call(self, config: &BirdConfig) -> Result<(), BirdError> {
-      // get all programs from bird-eggs file
-      // let mut eggs = files::read_eggs_file(config)?;
+      let eggs = Eggs::new(&config)?;
 
-      // eggs.sort_by_key(|a| a.dependencies.is_some());
-
-      // // if no programs in eggs abort exit the program
-      // if eggs.len() == 0 {
-      //    println!(
-      //       "\n{}",
-      //       colour::warn("No programs found in '.birds-eggs.json'")
-      //    );
-      //    return Ok(());
-      // }
-
-      // read .bird-eggs to hashmap
-      // All:
-      // iterate through all eggs.
-      // check for egg in nest
-      // if there are dependencies
-      // check for dependency eggs in nest
-      // if not in nest, check if it exists in the eggs hashmap
-      // if does install the egg(s) first then install the original egg
-      // if the dependencies aren't found in the nest or eggs hasmap then 
-      // print an error message and skip installation for that egg.
-
-      // Programs:
-      // iterate through programs vec
-      // check if the the program exists in the eggs hashmap
-      // if not found print error and skip else
-      // check if the eggs already installed in the nest hashmap
-      // if not then, check if it has dependencies,
-      // if has dependencies check for their 
-
-      let mut eggs: HashMap<String, Egg> = files::eggs_to_hashmap(config)?;
-
-      let cb = |k: &String, v: &Egg| {
-         
-      };
-
-      match self.all {
-         true => {
-            // iter_hashmap(&eggs, |k, v| println!("{}", k));
-            for (key, value) in &eggs {
-               
-            }
-         }
-         false => {}
+      if eggs.eggs.is_empty() {
+         println!("\n{}", colour::warn("No programs found in '.birds-eggs.json'"));
+         return Ok(());
       }
 
-      // match self.all {
-      //    true => {
-      //       for egg in eggs {
-      //          if !self.skip.iter().any(|s| s == &egg.name) {
-      //             // egg.install()?;
-      //             println!("\n\n{:?}", &egg);
-      //          }
-      //       }
-      //       return Ok(());
-      //    }
-      //    false => {
-      //       
-      //    }
-      // }
+      if !Nest::exists(&config) {
+         Nest::init(&config)?;
+      }
 
-      // // if '--all' flag was used, install all programs
-      // if self.all {
-      //    for egg in eggs {
-      //       if !self.skip.iter().any(|s| s == &egg.name) {
-      //          // egg.install()?;
-      //          println!("\n\n{:?}", &egg);
-      //       }
-      //    }
-      //    return Ok(());
-      // }
+      let mut nest = Nest::new(&config)?;
 
-      // let mut invalid_eggs = Vec::new();
+      match self.all {
+         true => Self::install_all(self, &eggs, &mut nest, &config),
+         false => Self::install_selected(self, &eggs, &mut nest, &config)?,
+      }
 
-      // for program in self.programs {
-      //    if let Some(egg) = eggs.iter().find(|e| e.name == program) {
-      //       egg.install()?;
-      //    } else {
-      //       invalid_eggs.push(program);
-      //    }
-      // }
+      Ok(())
+   }
+}
 
-      // if !invalid_eggs.is_empty() {
-      //    return Err(BirdError::ProgramsNotFound(invalid_eggs));
-      // }
+impl Install {
+   fn install_all(self, eggs: &Eggs, nest: &mut Nest, config: &BirdConfig) {
+      for (key, value) in &eggs.eggs {
+         if !self.skip.iter().any(|i| &i == &key) {
+            match nest.nest.contains_key(&key.to_owned()) {
+               true => println!("\n{}", colour::warn(&format!("{} is already installed", key))),
+               false => match Self::install_program(&value.clone(), &eggs, nest, &config) {
+                  Ok(_) => (),
+                  Err(e) => println!("{}", &e),
+               },
+            }
+         }
+      }
+   }
 
+   fn install_selected(self, eggs: &Eggs, nest: &mut Nest, config: &BirdConfig) -> Result<(), BirdError> {
+      let mut invalid_eggs = Vec::new();
+
+      for (key, value) in &eggs.eggs {
+         match self.programs.iter().any(|i| &i == &key) {
+            true => match nest.nest.contains_key(&key.to_owned()) {
+               true => println!("\n{}", colour::warn(&format!("{} is already installed", key))),
+               false => match Self::install_program(&value.clone(), &eggs, nest, &config) {
+                  Ok(_) => (),
+                  Err(e) => println!("{}", &e),
+               },
+            },
+            false => invalid_eggs.push(key.clone()),
+         }
+      }
+
+      if !invalid_eggs.is_empty() {
+         return Err(BirdError::ProgramsNotFound(invalid_eggs));
+      }
+      Ok(())
+   }
+
+   fn install_program(egg: &EggItem, eggs: &Eggs, nest: &mut Nest, config: &BirdConfig) -> Result<(), String> {
+      match &egg.dependencies {
+         Some(deps) => {
+            for d in deps {
+               if !nest.nest.contains_key(&d.to_owned()) {
+                  if eggs.eggs.contains_key(&d.to_owned()) {
+                     match eggs.eggs.get(&d.to_owned()) {
+                        Some(ee) => {
+                           println!(
+                              "{} {}: {}",
+                              format!("{}", colour::info("Installing dependency for")),
+                              colour::warn(&egg.name),
+                              &format!(": {}", colour::info(&ee.name))
+                           );
+
+                           match Self::install_program(&ee, &eggs, nest, &config) {
+                              Ok(_) => (),
+                              Err(err) => return Err(err),
+                           }
+
+                           match ee.install() {
+                              Ok(_) => {
+                                 nest.append(&ee.name, &config).unwrap();
+                              }
+                              Err(_err) => {
+                                 return Err(format!(
+                                    "\n{}\n{}",
+                                    colour::error(&format!("Installation of dependency {} failed", &d)),
+                                    colour::warn(&format!("Skipping '{}'", &egg.name))
+                                 ))
+                              }
+                           }
+                        }
+                        _ => (),
+                     }
+                  } else {
+                     return Err(format!(
+                        "\nLine: 171: {}\n{}",
+                        colour::error(&format!("Dependency {} was not found in .bird-eggs.json", &d)),
+                        colour::warn(&format!("Skipping '{}'", &egg.name))
+                     ));
+                  }
+               }
+            }
+            match egg.install() {
+               Ok(_) => {
+                  nest.append(&egg.name, &config).unwrap();
+               }
+               Err(_err) => {
+                  return Err(format!(
+                     "\n{}\n{}",
+                     colour::error(&format!("Installation of {} failed", &egg.name)),
+                     colour::warn(&format!("Skipping '{}'", &egg.name))
+                  ))
+               }
+            }
+         }
+         None => match egg.install() {
+            Ok(_) => {
+               nest.append(&egg.name, &config).unwrap();
+            }
+            Err(_err) => {
+               return Err(format!(
+                  "\n{}\n{}",
+                  colour::error(&format!("Installation of {} failed", &egg.name)),
+                  colour::warn(&format!("Skipping '{}'", &egg.name))
+               ))
+            }
+         },
+      }
       Ok(())
    }
 }

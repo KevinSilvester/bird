@@ -1,9 +1,8 @@
-use crate::core::commands::{Chirp, Command as _, Install};
-use crate::core::BirdConfig;
-use crate::utils::colour;
-use crate::utils::errors::BirdError;
-use clap::Parser;
-// use anyhow::Result;
+use crate::core::{
+   commands::{Chirp, Command as _, Install},
+   BirdConfig,
+};
+use crate::utils::{colour, errors::BirdError};
 
 #[derive(clap::Parser, Debug)]
 pub enum SubCommand {
@@ -45,8 +44,4 @@ impl SubCommand {
 pub struct BirdCli {
    #[clap(subcommand)]
    pub subcmd: SubCommand,
-}
-
-pub fn parse() -> BirdCli {
-   BirdCli::parse()
 }

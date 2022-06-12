@@ -1,11 +1,14 @@
-use crate::utils::colour;
 use crate::utils::errors::BirdError;
+use crate::utils::serializers::eggs;
+use crate::utils::{colour, files};
 use serde::{Deserialize, Serialize};
-use std::process::{Command, Stdio};
 use std::collections::HashMap;
+use std::process::{Command, Stdio};
+
+use super::BirdConfig;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Egg {
+pub struct EggItem {
    pub name: String,
    pub preinstall: Option<Vec<String>>,
    pub install: Option<Vec<String>>,
@@ -14,16 +17,13 @@ pub struct Egg {
    pub dependencies: Option<Vec<String>>,
 }
 
-impl Egg {
+impl EggItem {
    pub fn install(&self) -> Result<(), BirdError> {
       println!("{}", colour::info(&format!("\n*** Installing {}***", self.name)));
 
       if let Some(preinstall) = &self.preinstall {
          for command in preinstall {
-            println!(
-               "{}",
-               colour::info(&format!("\nRunning preinstall command: {}", command))
-            );
+            println!("{}", colour::info(&format!("Running preinstall command: {}", command)));
 
             let preinstall_cmd = Command::new("fish")
                .stderr(Stdio::inherit())
@@ -36,16 +36,11 @@ impl Egg {
                return Err(BirdError::CommandFailed(command.to_owned()));
             }
          }
-      } else {
-         println!("{}", colour::warn("\nNo preinstall commands"));
       }
 
       if let Some(install) = &self.install {
          for command in install {
-            println!(
-               "{}",
-               colour::info(&format!("\nRunning install command: {}", command))
-            );
+            println!("{}", colour::info(&format!("Running install command: {}", command)));
 
             let install_cmd = Command::new("fish")
                .stderr(Stdio::inherit())
@@ -58,8 +53,10 @@ impl Egg {
                return Err(BirdError::CommandFailed(command.to_owned()));
             }
          }
+
+         println!("{}", colour::success(&format!("{} installed successfully", &self.name)))
       } else {
-         println!("{}", colour::warn("\nNo install commands"));
+         println!("{}", colour::warn("No install commands"));
       }
 
       Ok(())
@@ -67,31 +64,26 @@ impl Egg {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct EggsWrapper {
+pub struct Eggs {
    #[serde(with = "eggs")]
-   pub eggs: HashMap<String, Egg>
+   pub eggs: HashMap<String, EggItem>,
 }
 
-// ref: https://github.com/serde-rs/serde/issues/936#issuecomment-302281792
-mod eggs {
-   use super::Egg;
-   use std::collections::HashMap;
-   use serde::ser::Serializer;
-   use serde::de::{Deserialize, Deserializer};
-   
-   pub fn serialize<S>(map: &HashMap<String, Egg>, serializer:S) -> Result<S::Ok, S::Error>
-      where S: Serializer
-   {
-      serializer.collect_seq(map.values())
+impl Eggs {
+   pub fn new(config: &BirdConfig) -> Result<Self, BirdError> {
+      Ok(Self {
+         eggs: Self::file_to_hashmap(&config)?,
+      })
    }
 
-   pub fn deserialize<'de, D>(deserializer: D) -> Result<HashMap<String, Egg>, D::Error>
-   where D: Deserializer<'de>
-   {
-      let mut map = HashMap::new();
-      for egg in Vec::<Egg>::deserialize(deserializer)? {
-         map.insert(egg.name.clone(), egg);
-      }
-      Ok(map)
+   pub fn file_to_hashmap(config: &BirdConfig) -> Result<HashMap<String, EggItem>, BirdError> {
+      let json = files::read_file(&config.eggs_file)?;
+
+      let parsed_json: Eggs = match serde_json::from_str(&json) {
+         Ok(s) => s,
+         Err(err) => return Err(BirdError::JsonError((".bird-egg.json".to_owned(), err.to_string()))),
+      };
+
+      Ok(parsed_json.eggs)
    }
 }

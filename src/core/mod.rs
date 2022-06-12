@@ -1,10 +1,10 @@
 mod cli;
-mod config;
 mod commands;
-mod egg;
+mod config;
+mod eggs;
 mod nest;
 
-pub use self::cli::{BirdCli, parse};
+pub use self::cli::BirdCli;
 pub use self::config::BirdConfig;
-pub use self::egg::{Egg, EggsWrapper};
-pub use self::nest::Nest;
+pub use self::eggs::{EggItem, Eggs};
+pub use self::nest::{Nest, NestItem};
