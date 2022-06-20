@@ -19,4 +19,3 @@ pub fn read_file(path: &str) -> Result<String, BirdError> {
    };
    Ok(contents)
 }
-

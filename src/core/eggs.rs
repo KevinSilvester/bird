@@ -2,7 +2,7 @@ use crate::utils::errors::BirdError;
 use crate::utils::serializers::eggs;
 use crate::utils::{colour, files};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::process::{Command, Stdio};
 
 use super::BirdConfig;
@@ -66,17 +66,17 @@ impl EggItem {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Eggs {
    #[serde(with = "eggs")]
-   pub eggs: HashMap<String, EggItem>,
+   pub eggs: BTreeMap<String, EggItem>,
 }
 
 impl Eggs {
    pub fn new(config: &BirdConfig) -> Result<Self, BirdError> {
       Ok(Self {
-         eggs: Self::file_to_hashmap(&config)?,
+         eggs: Self::file_to_btreemap(&config)?,
       })
    }
 
-   pub fn file_to_hashmap(config: &BirdConfig) -> Result<HashMap<String, EggItem>, BirdError> {
+   pub fn file_to_btreemap(config: &BirdConfig) -> Result<BTreeMap<String, EggItem>, BirdError> {
       let json = files::read_file(&config.eggs_file)?;
 
       let parsed_json: Eggs = match serde_json::from_str(&json) {

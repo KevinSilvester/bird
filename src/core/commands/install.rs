@@ -3,6 +3,7 @@ use crate::core::{BirdConfig, EggItem, Eggs, Nest};
 use crate::utils::{colour, errors::BirdError};
 
 #[derive(clap::Parser, Debug)]
+#[clap(arg_required_else_help = true)]
 pub struct Install {
    /// List of programs to be installed
    #[clap(multiple_values = true)]

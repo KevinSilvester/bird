@@ -6,6 +6,7 @@ use std::fmt;
 pub enum BirdError {
    IoError(String),
    TreeNotFound,
+   ProgramNotFound(String),
    ProgramsNotFound(Vec<String>),
    JsonError((String, String)),
    CommandFailed(String),
@@ -24,6 +25,12 @@ impl fmt::Display for BirdError {
             f,
             "{}: The environment variable 'BIRD_TREE' was not found",
             colour::error("Error")
+         ),
+        &BirdError::ProgramNotFound(ref program) => writeln!(
+            f,
+            "{}: The program [{}] was not found in '.bird-eggs.json'",
+            colour::error("ERROR"),
+            program
          ),
          &BirdError::ProgramsNotFound(ref programs) => writeln!(
             f,

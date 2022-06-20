@@ -3,20 +3,20 @@ pub mod eggs {
    use crate::core::EggItem;
    use serde::de::{Deserialize, Deserializer};
    use serde::ser::Serializer;
-   use std::collections::HashMap;
+   use std::collections::BTreeMap;
 
-   pub fn serialize<S>(map: &HashMap<String, EggItem>, serializer: S) -> Result<S::Ok, S::Error>
+   pub fn serialize<S>(map: &BTreeMap<String, EggItem>, serializer: S) -> Result<S::Ok, S::Error>
    where
       S: Serializer,
    {
       serializer.collect_seq(map.values())
    }
 
-   pub fn deserialize<'de, D>(deserializer: D) -> Result<HashMap<String, EggItem>, D::Error>
+   pub fn deserialize<'de, D>(deserializer: D) -> Result<BTreeMap<String, EggItem>, D::Error>
    where
       D: Deserializer<'de>,
    {
-      let mut map = HashMap::new();
+      let mut map = BTreeMap::new();
       for egg in Vec::<EggItem>::deserialize(deserializer)? {
          map.insert(egg.name.clone(), egg);
       }

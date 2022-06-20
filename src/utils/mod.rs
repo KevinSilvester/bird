@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 // mod colour;
 pub mod colour;
 pub mod errors;
