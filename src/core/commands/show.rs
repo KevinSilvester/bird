@@ -5,7 +5,7 @@ use crate::{colour, outln};
 
 #[derive(clap::Parser, Debug)]
 #[clap(arg_required_else_help = true)]
-pub struct List {
+pub struct Show {
    /// Show info for a specif program in '.bird-eggs'
    #[clap(multiple_values = false, exclusive = true)]
    program: Option<String>,
@@ -23,7 +23,7 @@ pub struct List {
    pub not_installed: bool,
 }
 
-impl Command for List {
+impl Command for Show {
    fn call(self, config: &BirdConfig) -> Result<(), BirdError> {
       let eggs = Eggs::new(&config)?;
 
@@ -44,11 +44,11 @@ impl Command for List {
          Some(p) => Self::show_specific(&p, &eggs, &nest)?,
          None => {
             if self.all {
-               Self::list_all(&eggs, &nest)?
+               Self::show_all(&eggs, &nest)?
             } else if self.installed {
-               Self::list_installed(&eggs, &nest)?
+               Self::show_installed(&eggs, &nest)?
             } else {
-               Self::list_not_installed(&eggs, &nest)?
+               Self::show_not_installed(&eggs, &nest)?
             }
          }
       }
@@ -57,7 +57,7 @@ impl Command for List {
    }
 }
 
-impl List {
+impl Show {
    fn show_specific(program: &str, eggs: &Eggs, nest: &Nest) -> Result<(), BirdError> {
       match eggs.eggs.get(program) {
          Some(e) => Ok(Self::print(e, nest.nest.get(program))),
@@ -65,14 +65,14 @@ impl List {
       }
    }
 
-   fn list_all(eggs: &Eggs, nest: &Nest) -> Result<(), BirdError> {
+   fn show_all(eggs: &Eggs, nest: &Nest) -> Result<(), BirdError> {
       for (key, value) in &eggs.eggs {
          Self::print(value, nest.nest.get(key));
       }
       Ok(())
    }
 
-   fn list_installed(eggs: &Eggs, nest: &Nest) -> Result<(), BirdError> {
+   fn show_installed(eggs: &Eggs, nest: &Nest) -> Result<(), BirdError> {
       for (key, value) in &eggs.eggs {
          if nest.nest.contains_key(key) {
             Self::print(value, nest.nest.get(key));
@@ -81,7 +81,7 @@ impl List {
       Ok(())
    }
 
-   fn list_not_installed(eggs: &Eggs, nest: &Nest) -> Result<(), BirdError> {
+   fn show_not_installed(eggs: &Eggs, nest: &Nest) -> Result<(), BirdError> {
       for (key, value) in &eggs.eggs {
          if !nest.nest.contains_key(key) {
             Self::print(value, nest.nest.get(key));

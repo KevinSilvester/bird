@@ -52,7 +52,7 @@ macro_rules! outln {
     }};
 
     (warn, $($arg:tt)*) => {{
-        print!("{}: ", $crate::colour!(blue, "WARNING"));
+        print!("{}: ", $crate::colour!(amber, "WARNING"));
         println!($($arg)*);
     }};
 
