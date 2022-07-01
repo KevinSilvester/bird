@@ -1,6 +1,6 @@
 use super::command::Command;
-use crate::core::BirdConfig;
 use crate::colour;
+use crate::core::BirdConfig;
 use crate::utils::errors::BirdError;
 
 #[derive(clap::Parser, Debug)]

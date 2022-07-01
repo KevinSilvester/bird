@@ -8,7 +8,7 @@ use crate::utils::errors::BirdError;
 #[derive(clap::Parser, Debug)]
 pub enum SubCommand {
    /// Install a specific program with using the installating commands set in '.bird-eggs.json'
-   #[clap(name = "install", short_flag = 'i', bin_name = "install")]
+   #[clap(name = "install", bin_name = "install")]
    Install(Install),
 
    /// Update a specific program with using the update commands set in '.bird-eggs.json'

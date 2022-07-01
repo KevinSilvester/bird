@@ -1,6 +1,6 @@
 use super::command::Command;
-use crate::outln;
 use crate::core::{BirdConfig, EggItem, Eggs, Nest};
+use crate::outln;
 use crate::utils::errors::BirdError;
 
 #[derive(clap::Parser, Debug)]
