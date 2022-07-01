@@ -1,6 +1,7 @@
 use crate::utils::errors::BirdError;
 use crate::utils::serializers::eggs;
 use crate::utils::{colour, files};
+use crate::{colour, outln};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::process::{Command, Stdio};
@@ -19,11 +20,13 @@ pub struct EggItem {
 
 impl EggItem {
    pub fn install(&self) -> Result<(), BirdError> {
-      println!("{}", colour::info(&format!("\n*** Installing {}***", self.name)));
+      println!("--------------------------------------------------");
+      println!("{} {}", colour!(blue, "Installing",), colour!(green, "{}", &self.name));
 
-      if let Some(preinstall) = &self.preinstall {
-         for command in preinstall {
-            println!("{}", colour::info(&format!("Running preinstall command: {}", command)));
+      if let Some(preinstall_cmds) = &self.preinstall {
+         println!("{} Running preinstall commands", colour!(green, "=>"));
+         for command in preinstall_cmds {
+            println!("   {} cmd `{}`", colour!(blue, "=>"), colour!(amber, "{}", &command));
 
             let preinstall_cmd = Command::new("fish")
                .stderr(Stdio::inherit())
@@ -38,10 +41,10 @@ impl EggItem {
          }
       }
 
-      if let Some(install) = &self.install {
-         for command in install {
-            println!("{}", colour::info(&format!("Running install command: {}", command)));
-
+      if let Some(install_cmds) = &self.install {
+         println!("{} Running install commands", colour!(green, "=>"));
+         for command in install_cmds {
+            println!("   {} cmd `{}`", colour!(blue, "=>"), colour!(amber, "{}", &command));
             let install_cmd = Command::new("fish")
                .stderr(Stdio::inherit())
                .stdout(Stdio::inherit())
@@ -54,11 +57,15 @@ impl EggItem {
             }
          }
 
-         println!("{}", colour::success(&format!("{} installed successfully", &self.name)))
+         println!("{}", colour!(green, "{} installed successfully", &self.name));
       } else {
-         println!("{}", colour::warn("No install commands"));
+         outln!(
+            warn,
+            "No install commands found for {}",
+            colour!(amber, "{}", &self.name)
+         );
       }
-
+      println!("--------------------------------------------------");
       Ok(())
    }
 }

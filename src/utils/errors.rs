@@ -1,4 +1,4 @@
-use super::colour;
+use crate::colour;
 use serde_json::error::Category;
 use std::fmt;
 
@@ -10,45 +10,46 @@ pub enum BirdError {
    ProgramsNotFound(Vec<String>),
    JsonError((String, String)),
    CommandFailed(String),
+   Logger(String),
 }
 
 impl fmt::Display for BirdError {
    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      match self {
-         &BirdError::IoError(ref str) => writeln!(
-            f,
-            "{}: The file/directory {} was not found",
-            colour::error("Error"),
-            str
-         ),
-         &BirdError::TreeNotFound => writeln!(
+      match *self {
+         BirdError::IoError(ref str) => {
+            writeln!(f, "{}: The file/directory {} was not found", colour!(red, "ERROR"), str)
+         }
+         BirdError::TreeNotFound => writeln!(
             f,
             "{}: The environment variable 'BIRD_TREE' was not found",
-            colour::error("Error")
+            colour!(red, "ERROR")
          ),
-        &BirdError::ProgramNotFound(ref program) => writeln!(
+         BirdError::ProgramNotFound(ref program) => writeln!(
             f,
             "{}: The program [{}] was not found in '.bird-eggs.json'",
-            colour::error("ERROR"),
+            colour!(red, "ERROR"),
             program
          ),
-         &BirdError::ProgramsNotFound(ref programs) => writeln!(
+         BirdError::ProgramsNotFound(ref programs) => writeln!(
             f,
             "{}: The programs [{}] were not found in .bird-eggs.json",
-            colour::error("Error"),
+            colour!(red, "ERROR"),
             programs.join(", ")
          ),
-         &BirdError::JsonError((ref file, ref msg)) => {
-            writeln!(f, "{}: {} - {}", colour::error("JsonError"), colour::warn(file), msg)
+         BirdError::JsonError((ref file, ref msg)) => {
+            writeln!(f, "{}: {} - {}", colour!(red, "ERROR"), colour!(amber, "{}", file), msg)
          }
-         &BirdError::CommandFailed(ref str) => {
+         BirdError::CommandFailed(ref str) => {
             writeln!(
                f,
                "{}: {} - {}",
-               colour::error("Error"),
-               colour::warn("Command Failed"),
+               colour!(red, "ERROR"),
+               colour!(amber, "Command Failed"),
                str
             )
+         }
+         BirdError::Logger(ref err) => {
+            writeln!(f, "{}: {}", colour!(red, "ERROR"), err)
          }
       }
    }
@@ -74,5 +75,11 @@ impl From<serde_json::Error> for BirdError {
          Category::Syntax => BirdError::JsonError(("Syntax".to_owned(), err.to_string())),
          Category::Data => BirdError::JsonError(("Data".to_owned(), err.to_string())),
       }
+   }
+}
+
+impl From<fern::InitError> for BirdError {
+   fn from(err: fern::InitError) -> Self {
+      BirdError::Logger(err.to_string())
    }
 }

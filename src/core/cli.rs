@@ -1,18 +1,19 @@
+use crate::colour;
 use crate::core::{
-   commands::{Command as _, Install, Show, Chirp},
+   commands::{Chirp, Command as _, Install, Show, Update},
    BirdConfig,
 };
-use crate::utils::{colour, errors::BirdError};
+use crate::utils::errors::BirdError;
 
 #[derive(clap::Parser, Debug)]
 pub enum SubCommand {
    /// Install a specific program with using the installating commands set in '.bird-eggs.json'
-   #[clap(name = "install", bin_name = "install")]
+   #[clap(name = "install", short_flag = 'i', bin_name = "install")]
    Install(Install),
 
    /// Update a specific program with using the update commands set in '.bird-eggs.json'
    #[clap(name = "update", bin_name = "update")]
-   Update,
+   Update(Update),
 
    /// Uninstall a specific program with using the uninstallating commands set in '.bird-eggs.json'
    #[clap(name = "uninstall", bin_name = "uninstall")]
@@ -31,8 +32,8 @@ impl SubCommand {
    pub fn call(self, config: BirdConfig) -> Result<(), BirdError> {
       match self {
          Self::Install(cmd) => Ok(cmd.call(&config)?),
-         Self::Update => Ok(println!("{}", colour::success("Updating..."))),
-         Self::Uninstall => Ok(println!("{}", colour::warn("Uninstalling..."))),
+         Self::Update(cmd) => Ok(cmd.call(&config)?),
+         Self::Uninstall => Ok(println!("{}", colour!(green, "Uninstalling..."))),
          Self::Show(cmd) => Ok(cmd.call(&config)?),
          Self::Chirp(cmd) => Ok(cmd.call(&config)?),
       }

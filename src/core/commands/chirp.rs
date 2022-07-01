@@ -1,6 +1,6 @@
 use super::command::Command;
 use crate::core::BirdConfig;
-use crate::utils::colour;
+use crate::colour;
 use crate::utils::errors::BirdError;
 
 #[derive(clap::Parser, Debug)]
@@ -54,7 +54,7 @@ impl Command for Chirp {
                                                               :7J5PGGGBBBBBBBBBBBBBBBBBBBBBBBBBBG5J?7777?GBBBBBBBG5J7~^^7BBBBBBBBBBBBBBBBBGGPP5J7.      
                                                               .^~7?JY5PPGGGGBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBGPPPPGGGGBBBBBBBBBBBGGGGPP5YJ?7~^.      
                                                                           .....:::^^^~~~~!!!!!777777777777777777777!!!!~~~~^^^:::....."#;
-      println!("{}", colour::info(ascii));
+      println!("{}", colour!(blue, "{}", ascii));
       Ok(())
    }
 }

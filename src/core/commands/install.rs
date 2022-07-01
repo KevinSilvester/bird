@@ -1,20 +1,28 @@
 use super::command::Command;
 use crate::core::{BirdConfig, EggItem, Eggs, Nest};
-use crate::utils::{colour, errors::BirdError};
+use crate::utils::errors::BirdError;
+use crate::{colour, outln};
+use dialoguer::{theme::ColorfulTheme, Confirm};
 
 #[derive(clap::Parser, Debug)]
 #[clap(arg_required_else_help = true)]
 pub struct Install {
    /// List of programs to be installed
-   #[clap(multiple_values = true)]
+   #[clap(multiple_values = true, exclusive = true)]
    pub programs: Vec<String>,
 
    /// Install all the programs with installation commands provided
-   #[clap(long, conflicts_with = "programs")]
+   #[clap(long, short, conflicts_with = "programs")]
    pub all: bool,
 
    /// Skip installing these programs if '--all' is passed in
-   #[clap(long, multiple_values = true, conflicts_with = "programs")]
+   #[clap(
+      long,
+      short,
+      multiple_values = true,
+      conflicts_with = "programs",
+      value_name = "PROGRAMS"
+   )]
    pub skip: Vec<String>,
 }
 
@@ -23,7 +31,7 @@ impl Command for Install {
       let eggs = Eggs::new(&config)?;
 
       if eggs.eggs.is_empty() {
-         println!("\n{}", colour::warn("No programs found in '.birds-eggs.json'"));
+         outln!(warn, "No programs found in '.birds-eggs.json'");
          return Ok(());
       }
 
@@ -44,16 +52,30 @@ impl Command for Install {
 
 impl Install {
    fn install_all(self, eggs: &Eggs, nest: &mut Nest, config: &BirdConfig) {
-      for (key, value) in &eggs.eggs {
-         if !self.skip.iter().any(|i| &i == &key) {
-            match nest.nest.contains_key(&key.to_owned()) {
-               true => println!("\n{}", colour::warn(&format!("{} is already installed", key))),
-               false => match Self::install_program(&value.clone(), &eggs, nest, &config) {
-                  Ok(_) => (),
-                  Err(e) => println!("{}", &e),
-               },
+      match Confirm::with_theme(&ColorfulTheme::default())
+         .show_default(true)
+         .wait_for_newline(true)
+         .with_prompt("This may take a while! Do you want to continue?")
+         .interact()
+         .unwrap()
+      {
+         true => {
+            for (key, value) in &eggs.eggs {
+               if !self.skip.iter().any(|i| &i == &key) {
+                  match nest.nest.contains_key(&key.to_owned()) {
+                     true => outln!(info, "{} is already installed!", colour!(amber, "{}", key)),
+                     false => match Self::install_program(&value.clone(), &eggs, nest, &config) {
+                        Ok(_) => (),
+                        Err((str_1, str_2)) => {
+                           outln!(warn, "{}", str_1);
+                           outln!(info, "{}", str_2);
+                        }
+                     },
+                  }
+               }
             }
          }
+         false => outln!(warn, "Installation cancelled!"),
       }
    }
 
@@ -62,11 +84,14 @@ impl Install {
 
       for program in self.programs {
          match nest.nest.contains_key(&program) {
-            true => println!("\n{}", colour::warn(&format!("{} is already installed", program))),
+            true => outln!(info, "{} is already installed!", colour!(amber, "{}", program)),
             false => match eggs.eggs.get(&program) {
                Some(e) => match Self::install_program(&e, &eggs, nest, &config) {
                   Ok(_) => (),
-                  Err(e) => println!("{}", &e),
+                  Err((str_1, str_2)) => {
+                     outln!(warn, "{}", str_1);
+                     outln!(info, "{}", str_2);
+                  }
                },
                None => invalid_eggs.push(program),
             },
@@ -79,76 +104,76 @@ impl Install {
       Ok(())
    }
 
-   fn install_program(egg: &EggItem, eggs: &Eggs, nest: &mut Nest, config: &BirdConfig) -> Result<(), String> {
+   fn install_program(
+      egg: &EggItem,
+      eggs: &Eggs,
+      nest: &mut Nest,
+      config: &BirdConfig,
+   ) -> Result<(), (String, String)> {
       match &egg.dependencies {
          Some(deps) => {
             for d in deps {
                if !nest.nest.contains_key(&d.to_owned()) {
                   if eggs.eggs.contains_key(&d.to_owned()) {
                      match eggs.eggs.get(&d.to_owned()) {
-                        Some(ee) => {
-                           println!(
-                              "{} {}: {}",
-                              format!("{}", colour::info("Installing dependency for")),
-                              colour::warn(&egg.name),
-                              &format!(": {}", colour::info(&ee.name))
+                        Some(dep_egg) => {
+                           outln!(
+                              info,
+                              "Installing dependency for {}: {}",
+                              colour!(amber, "{}", &egg.name),
+                              colour!(blue, "{}", &dep_egg.name)
                            );
-
-                           match Self::install_program(&ee, &eggs, nest, &config) {
+                           match Self::install_program(&dep_egg, &eggs, nest, &config) {
                               Ok(_) => (),
                               Err(err) => return Err(err),
                            }
 
-                           match ee.install() {
+                           match dep_egg.install() {
                               Ok(_) => {
-                                 nest.append(&ee.name, &config).unwrap();
+                                 nest.append(&dep_egg.name, &config).unwrap();
                               }
                               Err(_) => {
-                                 return Err(format!(
-                                    "\n{}\n{}",
-                                    colour::error(&format!("Installation of dependency {} failed", &d)),
-                                    colour::warn(&format!("Skipping '{}'", &egg.name))
-                                 ))
+                                 return Err((
+                                    format!(
+                                       "Installation of dependency {} for {} failed",
+                                       colour!(blue, "{}", &d),
+                                       colour!(amber, "{}", &dep_egg.name)
+                                    ),
+                                    format!("Skipping {} installation", colour!(amber, "{}", &egg.name)),
+                                 ));
                               }
                            }
                         }
                         _ => (),
                      }
                   } else {
-                     return Err(format!(
-                        "\nLine: 171: {}\n{}",
-                        colour::error(&format!("Dependency {} was not found in .bird-eggs.json", &d)),
-                        colour::warn(&format!("Skipping '{}'", &egg.name))
+                     return Err((
+                        format!(
+                           "Dependency {} for {} was not found '.bird-eggs'",
+                           colour!(blue, "{}", &d),
+                           colour!(amber, "{}", &egg.name)
+                        ),
+                        format!("Skipping {} installation", colour!(amber, "{}", &egg.name)),
                      ));
                   }
                }
             }
-            match egg.install() {
-               Ok(_) => {
-                  nest.append(&egg.name, &config).unwrap();
-               }
-               Err(_) => {
-                  return Err(format!(
-                     "\n{}\n{}",
-                     colour::error(&format!("Installation of {} failed", &egg.name)),
-                     colour::warn(&format!("Skipping '{}'", &egg.name))
-                  ))
-               }
-            }
          }
-         None => match egg.install() {
-            Ok(_) => {
-               nest.append(&egg.name, &config).unwrap();
-            }
-            Err(_) => {
-               return Err(format!(
-                  "\n{}\n{}",
-                  colour::error(&format!("Installation of {} failed", &egg.name)),
-                  colour::warn(&format!("Skipping '{}'", &egg.name))
-               ))
-            }
-         },
+         None => (),
       }
+
+      match egg.install() {
+         Ok(_) => {
+            nest.append(&egg.name, &config).unwrap();
+         }
+         Err(_) => {
+            return Err((
+               format!("Installation of {} failed", colour!(amber, "{}", &egg.name)),
+               format!("Skipping {} installation", colour!(amber, "{}", &egg.name)),
+            ));
+         }
+      }
+
       Ok(())
    }
 }

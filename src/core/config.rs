@@ -13,8 +13,6 @@ impl BirdConfig {
    pub fn new() -> Result<Self, BirdError> {
       let root_dir: String = env::var("BIRD_TREE")?;
 
-      // let root_dir = "/home/wsl1/__root__".to_owned();
-
       Ok(Self {
          root_dir: root_dir.clone(),
          eggs_file: root_dir.clone() + "/.bird-eggs.json",
