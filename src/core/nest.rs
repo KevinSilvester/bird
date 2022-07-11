@@ -46,11 +46,6 @@ impl Nest {
       Ok(())
    }
 
-   pub fn refresh(&mut self, config: &BirdConfig) -> Result<(), BirdError> {
-      self.nest = Self::file_to_btreemap(&config)?;
-      Ok(())
-   }
-
    pub fn append(&mut self, p_name: &String, config: &BirdConfig) -> Result<(), BirdError> {
       let p = NestItem {
          name: p_name.to_owned(),

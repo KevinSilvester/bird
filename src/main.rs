@@ -8,7 +8,7 @@ use clap::Parser;
 fn main() {
    match run_main() {
       Ok(_) => (),
-      Err(err) => println!("{}", err),
+      Err(err) => eprintln!("{}", err),
    }
 }
 

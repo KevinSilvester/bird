@@ -42,12 +42,12 @@ macro_rules! colour {
 #[macro_export]
 macro_rules! outln {
     (error, $($arg:tt)*) => {{
-        print!("\n{}: ", $crate::colour!(red, "ERROR"));
-        println!($($arg)*);
+        eprint!("\n{}: ", $crate::colour!(red, "ERROR"));
+        eprintln!($($arg)*);
     }};
 
     (info, $($arg:tt)*) => {{
-        print!("\n{}: ", $crate::colour!(blue, "INFO"));
+        print!("{}: ", $crate::colour!(blue, "INFO"));
         println!($($arg)*);
     }};
 

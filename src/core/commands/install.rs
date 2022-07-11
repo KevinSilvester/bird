@@ -67,8 +67,9 @@ impl Install {
                      false => match Self::install_program(&value.clone(), &eggs, nest, &config) {
                         Ok(_) => (),
                         Err((str_1, str_2)) => {
-                           outln!(warn, "{}", str_1);
+                           println!("{}: {}", colour!(red, "ALERT"), str_1);
                            outln!(info, "{}", str_2);
+                           println!("--------------------------------------------------");
                         }
                      },
                   }
@@ -89,8 +90,10 @@ impl Install {
                Some(e) => match Self::install_program(&e, &eggs, nest, &config) {
                   Ok(_) => (),
                   Err((str_1, str_2)) => {
-                     outln!(warn, "{}", str_1);
+                     println!("--------------------------------------------------");
+                     println!("{}: {}", colour!(red, "ALERT"), str_1);
                      outln!(info, "{}", str_2);
+                     println!("--------------------------------------------------");
                   }
                },
                None => invalid_eggs.push(program),
@@ -113,46 +116,53 @@ impl Install {
       match &egg.dependencies {
          Some(deps) => {
             for d in deps {
-               if !nest.nest.contains_key(&d.to_owned()) {
-                  if eggs.eggs.contains_key(&d.to_owned()) {
-                     match eggs.eggs.get(&d.to_owned()) {
-                        Some(dep_egg) => {
-                           outln!(
-                              info,
-                              "Installing dependency for {}: {}",
+               if nest.nest.contains_key(&d.to_owned()) {
+                  continue;
+               }
+
+               if d.eq(&egg.name) {
+                  return Err((
+                     format!("Program {} cannot be its own dependency", colour!(blue, "{}", &d)),
+                     format!("Skipping {} installation", colour!(amber, "{}", &egg.name)),
+                  ));
+               }
+
+               match eggs.eggs.get(&d.to_owned()) {
+                  Some(dep_egg) => {
+                     println!("--------------------------------------------------");
+                     println!(
+                        "{}: Installing dependency for {}: {}",
+                        colour!(amber, "ALERT"),
+                        colour!(amber, "{}", &egg.name),
+                        colour!(blue, "{}", &dep_egg.name)
+                     );
+                     println!("--------------------------------------------------");
+
+                     match Self::install_program(&dep_egg, &eggs, nest, &config) {
+                        Ok(_) => {
+                           println!("--------------------------------------------------");
+                           println!(
+                              "{}: Installed dependency for {}: {}",
+                              colour!(amber, "ALERT"),
                               colour!(amber, "{}", &egg.name),
                               colour!(blue, "{}", &dep_egg.name)
                            );
-                           match Self::install_program(&dep_egg, &eggs, nest, &config) {
-                              Ok(_) => (),
-                              Err(err) => return Err(err),
-                           }
-
-                           match dep_egg.install() {
-                              Ok(_) => {
-                                 nest.append(&dep_egg.name, &config).unwrap();
-                              }
-                              Err(_) => {
-                                 return Err((
-                                    format!(
-                                       "Installation of dependency {} for {} failed",
-                                       colour!(blue, "{}", &d),
-                                       colour!(amber, "{}", &dep_egg.name)
-                                    ),
-                                    format!("Skipping {} installation", colour!(amber, "{}", &egg.name)),
-                                 ));
-                              }
-                           }
+                           println!("--------------------------------------------------");
                         }
-                        _ => (),
+                        Err(_) => {
+                           return Err((
+                              format!(
+                                 "Installation of dependency {} failed",
+                                 colour!(blue, "{}", &dep_egg.name)
+                              ),
+                              format!("Skipping {} installation", colour!(amber, "{}", &egg.name)),
+                           ))
+                        }
                      }
-                  } else {
+                  }
+                  None => {
                      return Err((
-                        format!(
-                           "Dependency {} for {} was not found '.bird-eggs'",
-                           colour!(blue, "{}", &d),
-                           colour!(amber, "{}", &egg.name)
-                        ),
+                        format!("Dependency {} was not found '.bird-eggs'", colour!(blue, "{}", &d)),
                         format!("Skipping {} installation", colour!(amber, "{}", &egg.name)),
                      ));
                   }
@@ -162,17 +172,19 @@ impl Install {
          None => (),
       }
 
+      println!("--------------------------------------------------");
       match egg.install() {
          Ok(_) => {
             nest.append(&egg.name, &config).unwrap();
          }
          Err(_) => {
             return Err((
-               format!("Installation of {} failed", colour!(amber, "{}", &egg.name)),
+               format!("Installation {} of failed", colour!(amber, "{}", &egg.name)),
                format!("Skipping {} installation", colour!(amber, "{}", &egg.name)),
             ));
          }
       }
+      println!("--------------------------------------------------");
 
       Ok(())
    }

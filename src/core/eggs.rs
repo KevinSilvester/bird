@@ -1,6 +1,6 @@
 use crate::utils::errors::BirdError;
+use crate::utils::files;
 use crate::utils::serializers::eggs;
-use crate::utils::{colour, files};
 use crate::{colour, outln};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -20,7 +20,6 @@ pub struct EggItem {
 
 impl EggItem {
    pub fn install(&self) -> Result<(), BirdError> {
-      println!("--------------------------------------------------");
       println!("{} {}", colour!(blue, "Installing",), colour!(green, "{}", &self.name));
 
       if let Some(preinstall_cmds) = &self.preinstall {
@@ -65,7 +64,36 @@ impl EggItem {
             colour!(amber, "{}", &self.name)
          );
       }
-      println!("--------------------------------------------------");
+      Ok(())
+   }
+
+   pub fn update(&self) -> Result<(), BirdError> {
+      println!("{} {}", colour!(blue, "Updating",), colour!(green, "{}", &self.name));
+
+      if let Some(update_cmds) = &self.update {
+         println!("{} Running update commands", colour!(green, "=>"));
+         for command in update_cmds {
+            println!("   {} cmd `{}`", colour!(blue, "=>"), colour!(amber, "{}", &command));
+            let install_cmd = Command::new("fish")
+               .stderr(Stdio::inherit())
+               .stdout(Stdio::inherit())
+               .args(&["-c", command])
+               .status()
+               .expect(&format!("command '{}' failed", command));
+
+            if !install_cmd.success() {
+               return Err(BirdError::CommandFailed(command.to_owned()));
+            }
+         }
+
+         println!("{}", colour!(green, "{} updated successfully", &self.name));
+      } else {
+         outln!(
+            warn,
+            "No update commands found for {}",
+            colour!(amber, "{}", &self.name)
+         );
+      }
       Ok(())
    }
 }
