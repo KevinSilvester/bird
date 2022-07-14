@@ -96,6 +96,36 @@ impl EggItem {
       }
       Ok(())
    }
+
+   pub fn uninstall(&self) -> Result<(), BirdError> {
+      println!("{} {}", colour!(blue, "Uninstalling",), colour!(green, "{}", &self.name));
+
+      if let Some(uninstall_cmds) = &self.uninstall {
+         println!("{} Running uninstall commands", colour!(green, "=>"));
+         for command in uninstall_cmds {
+            println!("   {} cmd `{}`", colour!(blue, "=>"), colour!(amber, "{}", &command));
+            let install_cmd = Command::new("fish")
+               .stderr(Stdio::inherit())
+               .stdout(Stdio::inherit())
+               .args(&["-c", command])
+               .status()
+               .expect(&format!("command '{}' failed", command));
+
+            if !install_cmd.success() {
+               return Err(BirdError::CommandFailed(command.to_owned()));
+            }
+         }
+
+         println!("{}", colour!(green, "{} uninstalled successfully", &self.name));
+      } else {
+         outln!(
+            warn,
+            "No uninstall commands found for {}",
+            colour!(amber, "{}", &self.name)
+         );
+      }
+      Ok(())
+   }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

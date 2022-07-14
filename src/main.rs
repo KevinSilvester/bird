@@ -16,8 +16,6 @@ fn run_main() -> Result<(), BirdError> {
    let config = BirdConfig::new()?;
    let values = BirdCli::parse();
 
-   dbg!(&values);
-
    values.subcmd.call(config)?;
    Ok(())
 }

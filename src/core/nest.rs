@@ -46,6 +46,17 @@ impl Nest {
       Ok(())
    }
 
+   pub fn file_to_btreemap(config: &BirdConfig) -> Result<BTreeMap<String, NestItem>, BirdError> {
+      let json = files::read_file(&config.nest_file)?;
+
+      let parsed_json: Nest = match serde_json::from_str(&json) {
+         Ok(s) => s,
+         Err(err) => return Err(BirdError::JsonError((".bird-nest.json".to_owned(), err.to_string()))),
+      };
+
+      Ok(parsed_json.nest)
+   }
+
    pub fn append(&mut self, p_name: &String, config: &BirdConfig) -> Result<(), BirdError> {
       let p = NestItem {
          name: p_name.to_owned(),
@@ -61,16 +72,5 @@ impl Nest {
       self.nest.remove(&p_name.to_owned());
       self.btreemap_to_file(&config)?;
       Ok(())
-   }
-
-   pub fn file_to_btreemap(config: &BirdConfig) -> Result<BTreeMap<String, NestItem>, BirdError> {
-      let json = files::read_file(&config.nest_file)?;
-
-      let parsed_json: Nest = match serde_json::from_str(&json) {
-         Ok(s) => s,
-         Err(err) => return Err(BirdError::JsonError((".bird-nest.json".to_owned(), err.to_string()))),
-      };
-
-      Ok(parsed_json.nest)
    }
 }

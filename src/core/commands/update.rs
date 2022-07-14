@@ -107,7 +107,12 @@ impl Update {
       Ok(())
    }
 
-   fn update_program(egg: &EggItem, eggs: &Eggs, nest: &mut Nest, config: &BirdConfig) -> Result<(), (String, String)> {
+   fn update_program(
+      egg: &EggItem,
+      _eggs: &Eggs,
+      nest: &mut Nest,
+      config: &BirdConfig,
+   ) -> Result<(), (String, String)> {
       println!("--------------------------------------------------");
       match egg.update() {
          Ok(_) => {

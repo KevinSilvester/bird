@@ -1,6 +1,5 @@
-use crate::colour;
 use crate::core::{
-   commands::{Chirp, Command as _, Install, Show, Update},
+   commands::{Chirp, Command as _, Install, Show, Uninstall, Update},
    BirdConfig,
 };
 use crate::utils::errors::BirdError;
@@ -17,7 +16,7 @@ pub enum SubCommand {
 
    /// Uninstall a specific program with using the uninstallating commands set in '.bird-eggs.json'
    #[clap(name = "uninstall", bin_name = "uninstall", visible_alias = "un")]
-   Uninstall,
+   Uninstall(Uninstall),
 
    /// List all programs in '.bird-eggs.json'
    #[clap(name = "show", bin_name = "show", visible_alias = "s")]
@@ -33,7 +32,7 @@ impl SubCommand {
       match self {
          Self::Install(cmd) => Ok(cmd.call(&config)?),
          Self::Update(cmd) => Ok(cmd.call(&config)?),
-         Self::Uninstall => Ok(println!("{}", colour!(green, "Uninstalling..."))),
+         Self::Uninstall(cmd) => Ok(cmd.call(&config)?),
          Self::Show(cmd) => Ok(cmd.call(&config)?),
          Self::Chirp(cmd) => Ok(cmd.call(&config)?),
       }
