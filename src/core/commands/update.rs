@@ -8,7 +8,7 @@ use dialoguer::{theme::ColorfulTheme, Confirm};
 #[clap(arg_required_else_help = true)]
 pub struct Update {
    /// List of programs to be updated
-   #[clap(multiple_values = true, exclusive = true)]
+   #[clap(multiple_values = true)]
    pub programs: Vec<String>,
 
    /// Update all the programs with installation commands provided
@@ -28,14 +28,18 @@ pub struct Update {
 
 impl Command for Update {
    fn call(self, config: &BirdConfig) -> Result<(), BirdError> {
+      if !Eggs::exists(&config)? {
+         Eggs::init(&config)?;
+      }
+
       let eggs = Eggs::new(&config)?;
 
       if eggs.eggs.is_empty() {
-         outln!(warn, "No programs found in '.birds-eggs.json'");
+         outln!(warn, "No programs found in {}", colour!(amber, "{}", &config.eggs_file_path()?));
          return Ok(());
       }
 
-      if !Nest::exists(&config) {
+      if !Nest::exists(&config)? {
          Nest::init(&config)?;
       }
 

@@ -2,8 +2,10 @@ use crate::utils::errors::BirdError;
 use crate::utils::files;
 use crate::utils::serializers::eggs;
 use crate::{colour, outln};
+use format_serde_error::SerdeError;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::path::Path;
 use std::process::{Command, Stdio};
 
 use super::BirdConfig;
@@ -98,7 +100,11 @@ impl EggItem {
    }
 
    pub fn uninstall(&self) -> Result<(), BirdError> {
-      println!("{} {}", colour!(blue, "Uninstalling",), colour!(green, "{}", &self.name));
+      println!(
+         "{} {}",
+         colour!(blue, "Uninstalling",),
+         colour!(green, "{}", &self.name)
+      );
 
       if let Some(uninstall_cmds) = &self.uninstall {
          println!("{} Running uninstall commands", colour!(green, "=>"));
@@ -141,13 +147,29 @@ impl Eggs {
       })
    }
 
-   pub fn file_to_btreemap(config: &BirdConfig) -> Result<BTreeMap<String, EggItem>, BirdError> {
-      let json = files::read_file(&config.eggs_file)?;
+   pub fn exists(config: &BirdConfig) -> Result<bool, BirdError> {
+      Ok(Path::new(&config.eggs_file_path()?).exists())
+   }
 
-      let parsed_json: Eggs = match serde_json::from_str(&json) {
-         Ok(s) => s,
-         Err(err) => return Err(BirdError::JsonError((".bird-egg.json".to_owned(), err.to_string()))),
-      };
+   pub fn init(config: &BirdConfig) -> Result<(), BirdError> {
+      let path = config.eggs_file_path()?;
+
+      outln!(info, "Creating eggs file at {}", colour!(amber, "{path}"));
+
+      files::create_file(&path)?;
+      files::write_file(&path, r#"{"eggs": []}"#)?;
+      Ok(())
+   }
+
+   pub fn file_to_btreemap(config: &BirdConfig) -> Result<BTreeMap<String, EggItem>, BirdError> {
+      let json = files::read_file(&config.eggs_file_path()?)?;
+
+      let parsed_json: Eggs = serde_json::from_str(&json).map_err(|err| {
+         BirdError::JsonError((
+            ".bird-eggs.json".to_owned(),
+            SerdeError::new(json.to_string(), err).to_string(),
+         ))
+      })?;
 
       Ok(parsed_json.eggs)
    }

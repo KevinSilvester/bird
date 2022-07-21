@@ -1,10 +1,14 @@
 use super::BirdConfig;
-use crate::utils::{
-   errors::BirdError,
-   files,
-   serializers::{date_format, nest},
+use crate::{
+   colour, outln,
+   utils::{
+      errors::BirdError,
+      files,
+      serializers::{date_format, nest},
+   },
 };
 use chrono::{DateTime, Utc};
+use format_serde_error::SerdeError;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -29,30 +33,38 @@ impl Nest {
       })
    }
 
-   pub fn exists(config: &BirdConfig) -> bool {
-      Path::new(&config.nest_file).exists()
+   pub fn exists(config: &BirdConfig) -> Result<bool, BirdError> {
+      Ok(Path::new(&config.nest_file_path()?).exists())
    }
 
    pub fn init(config: &BirdConfig) -> Result<(), BirdError> {
-      files::create_file(&config.nest_file)?;
-      files::write_file(&config.nest_file, r#"{"nest": []}"#)?;
+      let path = config.nest_file_path()?;
+
+      outln!(info, "Creating nest file at {}", colour!(amber, "{path}"));
+
+      files::create_file(&path)?;
+      files::write_file(&path, r#"{"nest": []}"#)?;
       Ok(())
    }
 
    pub fn btreemap_to_file(&mut self, config: &BirdConfig) -> Result<(), BirdError> {
       let json = serde_json::to_string_pretty(&self)?;
-      files::create_file(&config.nest_file)?;
-      files::write_file(&config.nest_file, &json)?;
+      let path = config.nest_file_path()?;
+
+      files::create_file(&path)?;
+      files::write_file(&path, &json)?;
       Ok(())
    }
 
    pub fn file_to_btreemap(config: &BirdConfig) -> Result<BTreeMap<String, NestItem>, BirdError> {
-      let json = files::read_file(&config.nest_file)?;
+      let json = files::read_file(&config.nest_file_path()?)?;
 
-      let parsed_json: Nest = match serde_json::from_str(&json) {
-         Ok(s) => s,
-         Err(err) => return Err(BirdError::JsonError((".bird-nest.json".to_owned(), err.to_string()))),
-      };
+      let parsed_json: Nest = serde_json::from_str(&json).map_err(|err| {
+         BirdError::JsonError((
+            ".bird-eggs.json".to_owned(),
+            SerdeError::new(json.to_string(), err).to_string(),
+         ))
+      })?;
 
       Ok(parsed_json.nest)
    }

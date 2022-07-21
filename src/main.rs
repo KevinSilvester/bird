@@ -1,7 +1,7 @@
 mod core;
 mod utils;
 
-use crate::core::{BirdCli, BirdConfig};
+use crate::core::BirdCli;
 use crate::utils::errors::BirdError;
 use clap::Parser;
 
@@ -13,9 +13,10 @@ fn main() {
 }
 
 fn run_main() -> Result<(), BirdError> {
-   let config = BirdConfig::new()?;
    let values = BirdCli::parse();
 
-   values.subcmd.call(config)?;
+   dbg!(&values);
+
+   values.subcmd.call(values.config)?;
    Ok(())
 }

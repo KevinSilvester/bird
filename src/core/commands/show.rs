@@ -7,7 +7,7 @@ use crate::{colour, outln};
 #[clap(arg_required_else_help = true)]
 pub struct Show {
    /// Show info for a specif program in '.bird-eggs'
-   #[clap(multiple_values = true, exclusive = true)]
+   #[clap(multiple_values = true)]
    programs: Vec<String>,
 
    /// List all programs in '.bird-eggs'
@@ -29,15 +29,18 @@ pub struct Show {
 
 impl Command for Show {
    fn call(self, config: &BirdConfig) -> Result<(), BirdError> {
+      if !Eggs::exists(&config)? {
+         Eggs::init(&config)?;
+      }
+
       let eggs = Eggs::new(&config)?;
 
       if eggs.eggs.is_empty() {
-         println!();
          outln!(warn, "No programs found in {}", colour!(amber, ".birds-eggs.json"));
          return Ok(());
       }
 
-      if !Nest::exists(&config) {
+      if !Nest::exists(&config)? {
          Nest::init(&config)?;
       }
 

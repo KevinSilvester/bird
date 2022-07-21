@@ -1,4 +1,3 @@
-
 use super::command::Command;
 use crate::core::{BirdConfig, EggItem, Eggs, Nest};
 use crate::utils::errors::BirdError;
@@ -29,6 +28,10 @@ pub struct Uninstall {
 
 impl Command for Uninstall {
    fn call(self, config: &BirdConfig) -> Result<(), BirdError> {
+      if !Eggs::exists(&config)? {
+         Eggs::init(&config)?;
+      }
+
       let eggs = Eggs::new(&config)?;
 
       if eggs.eggs.is_empty() {
@@ -36,7 +39,7 @@ impl Command for Uninstall {
          return Ok(());
       }
 
-      if !Nest::exists(&config) {
+      if !Nest::exists(&config)? {
          Nest::init(&config)?;
       }
 

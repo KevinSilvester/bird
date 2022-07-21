@@ -8,7 +8,7 @@ use dialoguer::{theme::ColorfulTheme, Confirm};
 #[clap(arg_required_else_help = true)]
 pub struct Install {
    /// List of programs to be installed
-   #[clap(multiple_values = true, exclusive = true)]
+   #[clap(multiple_values = true)]
    pub programs: Vec<String>,
 
    /// Install all the programs with installation commands provided
@@ -28,6 +28,10 @@ pub struct Install {
 
 impl Command for Install {
    fn call(self, config: &BirdConfig) -> Result<(), BirdError> {
+      if !Eggs::exists(&config)? {
+         Eggs::init(&config)?;
+      }
+
       let eggs = Eggs::new(&config)?;
 
       if eggs.eggs.is_empty() {
@@ -35,7 +39,7 @@ impl Command for Install {
          return Ok(());
       }
 
-      if !Nest::exists(&config) {
+      if !Nest::exists(&config)? {
          Nest::init(&config)?;
       }
 

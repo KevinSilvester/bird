@@ -4,10 +4,11 @@ use crate::core::{
 };
 use crate::utils::errors::BirdError;
 
+const INSTALL_ABOUT: &str = "Install a specific program with using the installating commands set in '.bird-eggs.json'";
+
 #[derive(clap::Parser, Debug)]
 pub enum SubCommand {
-   /// Install a specific program with using the installating commands set in '.bird-eggs.json'
-   #[clap(name = "install", bin_name = "install", visible_alias = "i")]
+   #[clap(name = "install", bin_name = "install", visible_alias = "i", long_about = INSTALL_ABOUT)]
    Install(Install),
 
    /// Update a specific program with using the update commands set in '.bird-eggs.json'
@@ -19,7 +20,7 @@ pub enum SubCommand {
    Uninstall(Uninstall),
 
    /// List all programs in '.bird-eggs.json'
-   #[clap(name = "show", bin_name = "show", visible_alias = "s")]
+   #[clap(name = "show", bin_name = "show")]
    Show(Show),
 
    /// Chirp
@@ -40,8 +41,11 @@ impl SubCommand {
 }
 
 #[derive(clap::Parser, Debug)]
-#[clap(name = env!("CARGO_PKG_NAME"), version = env!("CARGO_PKG_VERSION"), bin_name = env!("CARGO_PKG_NAME"))]
+#[clap(name = env!("CARGO_PKG_NAME"), version = env!("CARGO_PKG_VERSION"), bin_name = env!("CARGO_PKG_NAME"), long_about = "")]
 pub struct BirdCli {
+   #[clap(flatten)]
+   pub config: BirdConfig,
+
    #[clap(subcommand)]
    pub subcmd: SubCommand,
 }

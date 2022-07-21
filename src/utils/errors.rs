@@ -4,7 +4,9 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum BirdError {
-   IoError(String),
+   IoError((String, std::io::Error)),
+   // NotFile(String),
+   // NotDir(String),
    TreeNotFound,
    ProgramsNotFound(Vec<String>),
    JsonError((String, String)),
@@ -15,9 +17,30 @@ pub enum BirdError {
 impl fmt::Display for BirdError {
    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
       match *self {
-         BirdError::IoError(ref str) => {
-            writeln!(f, "{}: The file/directory {} was not found", colour!(red, "ERROR"), str)
+         BirdError::IoError((ref path, ref err)) => {
+            writeln!(
+               f,
+               "{}: {} {err}",
+               colour!(red, "ERROR"),
+               colour!(amber, "{path}")
+            )
          }
+         // BirdError::NotFile(ref str) => {
+         //    writeln!(
+         //       f,
+         //       "{}: Path {} is not a file",
+         //       colour!(red, "ERROR"),
+         //       colour!(amber, "{str}")
+         //    )
+         // }
+         // BirdError::NotDir(ref str) => {
+         //    writeln!(
+         //       f,
+         //       "{}: Path {} is not a directory",
+         //       colour!(red, "ERROR"),
+         //       colour!(amber, "{str}")
+         //    )
+         // }
          BirdError::TreeNotFound => writeln!(
             f,
             "{}: The environment variable 'BIRD_TREE' was not found",
@@ -31,7 +54,7 @@ impl fmt::Display for BirdError {
             colour!(amber, ".bird-eggs.json")
          ),
          BirdError::JsonError((ref file, ref msg)) => {
-            writeln!(f, "{}: {} - {}", colour!(red, "ERROR"), colour!(amber, "{}", file), msg)
+            writeln!(f, "{}: {} - {}", colour!(red, "ERROR"), colour!(blue, "{}", file), msg)
          }
          BirdError::CommandFailed(ref str) => {
             writeln!(
@@ -51,7 +74,7 @@ impl fmt::Display for BirdError {
 
 impl From<std::io::Error> for BirdError {
    fn from(err: std::io::Error) -> Self {
-      BirdError::IoError(err.to_string())
+      BirdError::IoError(("".to_owned(), err))
    }
 }
 
@@ -69,6 +92,12 @@ impl From<serde_json::Error> for BirdError {
          Category::Syntax => BirdError::JsonError(("Syntax".to_owned(), err.to_string())),
          Category::Data => BirdError::JsonError(("Data".to_owned(), err.to_string())),
       }
+   }
+}
+
+impl From<format_serde_error::SerdeError> for BirdError {
+   fn from(err: format_serde_error::SerdeError) -> Self {
+      BirdError::JsonError(("JSON Error".to_owned(), err.to_string()))
    }
 }
 
