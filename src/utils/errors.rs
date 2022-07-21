@@ -48,7 +48,7 @@ impl fmt::Display for BirdError {
          ),
          BirdError::ProgramsNotFound(ref programs) => writeln!(
             f,
-            "{}: The programs [{}] were not found in {}",
+            "{}: The program(s) [{}] were not found in {}",
             colour!(red, "ERROR"),
             programs.join(", "),
             colour!(amber, ".bird-eggs.json")

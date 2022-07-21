@@ -1,4 +1,3 @@
-// use anyhow::Result;
 use crate::utils::errors::BirdError;
 use dirs;
 use std::path::PathBuf;

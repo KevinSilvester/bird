@@ -8,7 +8,7 @@ use dialoguer::{theme::ColorfulTheme, Confirm};
 #[clap(arg_required_else_help = true)]
 pub struct Uninstall {
    /// List of programs to be updated
-   #[clap(multiple_values = true, exclusive = true)]
+   #[clap(multiple_values = true)]
    pub programs: Vec<String>,
 
    /// Update all the programs with installation commands provided
