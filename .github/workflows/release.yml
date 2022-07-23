@@ -39,5 +39,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: bird-${{ matrix.targets.name }}
-          path: target/release/${{ steps.binName }}
+          path: target/release/${{ steps.binName.outputs.value }}
 
