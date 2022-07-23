@@ -1,0 +1,43 @@
+name: Release
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build_x86_64_binarie:
+    strategy:
+      matrix:
+        targets:
+          - os: linux
+            name: x86_64-linux
+          - os: windows
+            name: x86_64-windows
+          - os: macOS-latest
+            name: x86_64-darwin
+
+
+    runs-on: ${{ matrix.targets.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+      - uses: Swatinem/rust-cache@v1
+
+      - name: Build release
+        run: cargo build --release
+
+      - uses: haya14busa/action-cond@v1
+        id: binName
+        with:
+          cond: ${{ runner.os == 'Windows' }}
+          if_true: "bird.exe"
+          if_false: "bird"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bird-${{ matrix.targets.name }}
+          path: target/release/${{ steps.binName }}
+
