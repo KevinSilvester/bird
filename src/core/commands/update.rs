@@ -35,7 +35,11 @@ impl Command for Update {
       let eggs = Eggs::new(&config)?;
 
       if eggs.eggs.is_empty() {
-         outln!(warn, "No programs found in {}", colour!(amber, "{}", &config.eggs_file_path()?));
+         outln!(
+            warn,
+            "No programs found in {}",
+            colour!(amber, "{}", &config.eggs_file_path()?)
+         );
          return Ok(());
       }
 

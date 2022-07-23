@@ -11,7 +11,7 @@ const DEFAULT_SHELL: &str = "bash";
 #[derive(clap::Parser, Debug)]
 pub struct BirdConfig {
    /// Path to eggs file.
-   /// Default path '~/.config/bird/bird-eggs.json'.
+   /// Default path '~/.bird/bird-eggs.json'.
    #[clap(
       long = "eggs",
       env = "BIRD_EGGS",
@@ -23,7 +23,7 @@ pub struct BirdConfig {
 
    /// Path to nest file.
    /// The nest file is autogerated and
-   /// Default path '~/.local/share/bird/bird-nest.json'.
+   /// Default path '~/.bird/bird-nest.json'.
    #[clap(
       long = "nest",
       env = "BIRD_NEST",
@@ -35,7 +35,14 @@ pub struct BirdConfig {
 
    /// Shell to run bird with.
    /// Default shell 'bash'.
-   #[clap(long, multiple_values = false, env = "BIRD_SHELL", global = true, default_value = DEFAULT_SHELL, hide_env_values = true)]
+   #[clap(
+      long,
+      multiple_values = false,
+      env = "BIRD_SHELL",
+      global = true,
+      default_value = DEFAULT_SHELL,
+      hide_env_values = true
+   )]
    pub shell: String,
 }
 
