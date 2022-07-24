@@ -104,7 +104,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.target }}
+          name: bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}
           path: |
             *.deb
             *.tar.gz
