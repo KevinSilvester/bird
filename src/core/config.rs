@@ -8,6 +8,9 @@ const DEFAULT_SHELL: &str = "powershell";
 #[cfg(unix)]
 const DEFAULT_SHELL: &str = "bash";
 
+const SHELL_HELP: &str = r"Shell that will be used to run command.
+Default shell is 'bash' on Unix based systems and 'powershell' in Windows.";
+
 #[derive(clap::Parser, Debug)]
 pub struct BirdConfig {
    /// Path to eggs file.
@@ -37,7 +40,7 @@ pub struct BirdConfig {
       global = true,
       default_value = DEFAULT_SHELL,
       hide_env_values = true,
-      long_help = "Shell to run bird with.\nDefault shell is 'bash' on Unix based systems and 'powershell' in Windows."
+      long_help = SHELL_HELP
    )]
    pub shell: String,
 }
