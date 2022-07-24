@@ -89,7 +89,7 @@ jobs:
         if: runner.os != 'Windows'
         run: >
           tar -cv
-          README.md LISCENCE
+          README.md LICENSE.txt
           -C target/${{ matrix.target }}/release/ bird
           | gzip --best
           > 'bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.tar.gz'
@@ -98,7 +98,7 @@ jobs:
         if: runner.os == 'Windows'
         run: >
           7z a 'bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.zip'
-          README.md LISCENCE
+          README.md LICENSE.txt
           ./target/${{ matrix.target }}/release/bird.exe
 
       - name: Upload Artifact
