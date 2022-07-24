@@ -1,6 +1,6 @@
 [package]
 name = "bird"
-version = "0.8.3-dev"
+version = "0.8.4-dev"
 edition = "2021"
 authors = ["Kevin Silvester"]
 description = "An installation organizer of sorts"

@@ -48,8 +48,7 @@ jobs:
       - name: Set artifact name
         shell: bash
         run: |
-          version="$(git describe --tags --match='v*.*.*' --always)"
-          name="bird-$version-${{ matrix.target }}"
+          name="bird-v${{ steps.get_version.outputs.value }}-${{ matrix.target }}"
           echo "ARTIFACT_NAME=$name" >> $GITHUB_ENV
           echo "version: v${{ steps.get_version.outputs.value }}"
           echo "artifact: $name"
