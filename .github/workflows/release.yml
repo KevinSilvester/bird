@@ -92,19 +92,19 @@ jobs:
           README.md LICENSE.txt
           -C target/${{ matrix.target }}/release/ bird
           | gzip --best
-          > 'bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.tar.gz'
+          > 'bird-v${{ steps.get_version.outputs.value }}-${{ matrix.target }}.tar.gz'
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
         run: >
-          7z a 'bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.zip'
+          7z a 'bird-v${{ steps.get_version.outputs.value }}-${{ matrix.target }}.zip'
           README.md LICENSE.txt
           ./target/${{ matrix.target }}/release/bird.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}
+          name: bird-v${{ steps.get_version.outputs.value }}-${{ matrix.target }}
           path: |
             *.deb
             *.tar.gz
@@ -119,5 +119,5 @@ jobs:
             *.deb
             *.tar.gz
             *.zip
-          name: ${{ steps.get_version.outputs.value }}
-          tag_name: ""
+          name: v${{ steps.get_version.outputs.value }}
+          tag_name: v${{ steps.get_version.outputs.value }}
