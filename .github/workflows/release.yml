@@ -121,3 +121,4 @@ jobs:
             *.zip
           name: v${{ steps.get_version.outputs.value }}
           tag_name: v${{ steps.get_version.outputs.value }}
+          generate_release_notes: true
