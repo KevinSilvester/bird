@@ -83,7 +83,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: deb
-          args: --no-build --no-strip --output=bird-${{ steps.get_version.outputs.value }}-v${{ matrix.target }}.deb --target=${{ matrix.target }}
+          args: --no-build --no-strip --output=bird-v${{ steps.get_version.outputs.value }}-${{ matrix.target }}.deb --target=${{ matrix.target }}
 
       - name: Package (Unix)
         if: runner.os != 'Windows'
