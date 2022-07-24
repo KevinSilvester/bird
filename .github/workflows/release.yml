@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: |
           version="$(git describe --tags --abbrev=0)"
-          name="zoxide-$version-${{ matrix.target }}"
+          name="bird-$version-${{ matrix.target }}"
           echo "ARTIFACT_NAME=$name" >> $GITHUB_ENV
           echo "version: $version"
           echo "artifact: $name"
@@ -99,7 +99,7 @@ jobs:
         run: >
           7z a 'bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.zip'
           README.md LISCENCE
-          ./target/${{ matrix.target }}/release/zoxide.exe
+          ./target/${{ matrix.target }}/release/bird.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
