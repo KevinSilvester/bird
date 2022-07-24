@@ -69,7 +69,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --locked --target=${{ matrix.target }} --color=always --verbose
+          args: --release --locked --target=${{ matrix.target }} --color=always
           use-cross: ${{ runner.os == 'Linux' }}
 
       - name: Install cargo-deb
