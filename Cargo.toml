@@ -1,6 +1,6 @@
 [package]
 name = "bird"
-version = "0.8.2"
+version = "0.8.3"
 edition = "2021"
 authors = ["Kevin Silvester"]
 description = "An installation organizer of sorts"
@@ -10,9 +10,10 @@ homepage = "https://github.com/KevinSilvester/bird"
 licence = "MIT"
 license-file = "LICENSE.txt"
 include = [ 
-  "Cargo.toml", 
-  "LICENSE", 
-  "src/**/*"
+   "README.md",
+   "Cargo.toml", 
+   "LICENSE.txt", 
+   "src/**/*"
 ]
 
 [dependencies]
