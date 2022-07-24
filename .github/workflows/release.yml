@@ -5,39 +5,107 @@ on:
       - "main"
 
 jobs:
-  build_x86_64_binarie:
+  build:
     strategy:
       matrix:
-        targets:
-          - os: linux
-            name: x86_64-linux
-          - os: windows
-            name: x86_64-windows
-          - os: macOS-latest
-            name: x86_64-darwin
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            deb: true
 
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            deb: true
 
-    runs-on: ${{ matrix.targets.os }}
+          - os: macos-latest
+            target: x86_64-apple-darwin
+
+          - os: macos-latest
+            target: aarch64-apple-darwin
+
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.target }}
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: hecrj/setup-rust-action@v1
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get version
+        id: bird_version
+        uses: SebRollen/toml-action@v1.0.0
         with:
-          rust-version: stable
-      - uses: Swatinem/rust-cache@v1
+          file: Cargo.toml
+          field: package.version
 
-      - name: Build release
-        run: cargo build --release
+      - name: Set artifact name
+        shell: bash
+        run: |
+          version="$(git describe --tags --abbrev=0)"
+          name="zoxide-$version-${{ matrix.target }}"
+          echo "ARTIFACT_NAME=$name" >> $GITHUB_ENV
+          echo "version: $version"
+          echo "artifact: $name"
 
-      - uses: haya14busa/action-cond@v1
-        id: binName
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
-          cond: ${{ runner.os == 'Windows' }}
-          if_true: "bird.exe"
-          if_false: "bird"
+          toolchain: stable
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Setup cache
+        uses: Swatinem/rust-cache@v1
+
+      - name: Build binary
+        uses: actions-rs/cargo@v1
         with:
-          name: bird-${{ matrix.targets.name }}
-          path: target/release/${{ steps.binName.outputs.value }}
+          command: build
+          args: --release --locked --target=${{ matrix.target }} --color=always --verbose
+          use-cross: ${{ runner.os == 'Linux' }}
 
+      - name: Install cargo-deb
+        if: ${{ matrix.deb == true }}
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cargo-deb
+
+      - name: Build deb
+        if: ${{ matrix.deb == true }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: deb
+          args: --no-build --no-strip --output=. --target=${{ matrix.target }}
+
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        run: >
+          tar -cv
+          README.md LISCENCE
+          -C target/${{ matrix.target }}/release/ bird
+          | gzip --best
+          > 'bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.tar.gz'
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          7z a 'bird-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.zip'
+          README.md LISCENCE
+          ./target/${{ matrix.target }}/release/zoxide.exe
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            *.deb
+            *.tar.gz
+            *.zip
