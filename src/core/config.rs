@@ -5,7 +5,7 @@ use std::path::PathBuf;
 #[cfg(windows)]
 mod shell_vars {
    pub const DEFAULT_SHELL: &str = "powershell";
-   pub const AVAILABLE_SHELLS: &[&str; 5] = &["cmd", "powershell", "pwsh", "bash", "zsh", "fish"];
+   pub const AVAILABLE_SHELLS: &[&str; 6] = &["cmd", "powershell", "pwsh", "bash", "zsh", "fish"];
 }
 
 #[cfg(unix)]
