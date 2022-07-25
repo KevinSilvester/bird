@@ -177,7 +177,7 @@ impl Install {
       }
 
       println!("--------------------------------------------------");
-      match egg.install() {
+      match egg.install(&config) {
          Ok(_) => {
             nest.append(&egg.name, &config).unwrap();
          }

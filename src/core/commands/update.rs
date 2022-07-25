@@ -122,7 +122,7 @@ impl Update {
       config: &BirdConfig,
    ) -> Result<(), (String, String)> {
       println!("--------------------------------------------------");
-      match egg.update() {
+      match egg.update(&config) {
          Ok(_) => {
             nest.append(&egg.name, &config).unwrap();
          }

@@ -118,7 +118,7 @@ impl Uninstall {
       config: &BirdConfig,
    ) -> Result<(), (String, String)> {
       println!("--------------------------------------------------");
-      match egg.uninstall() {
+      match egg.uninstall(&config) {
          Ok(_) => {
             nest.remove(&egg.name, &config).unwrap();
          }

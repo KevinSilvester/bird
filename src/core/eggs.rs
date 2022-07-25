@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::Path;
 use std::process::{Command, Stdio};
-
 use super::BirdConfig;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, Ord, PartialEq, PartialOrd)]
@@ -21,7 +20,7 @@ pub struct EggItem {
 }
 
 impl EggItem {
-   pub fn install(&self) -> Result<(), BirdError> {
+   pub fn install(&self, config: &BirdConfig) -> Result<(), BirdError> {
       println!("{} {}", colour!(blue, "Installing",), colour!(green, "{}", &self.name));
 
       if let Some(preinstall_cmds) = &self.preinstall {
@@ -46,7 +45,7 @@ impl EggItem {
          println!("{} Running install commands", colour!(green, "=>"));
          for command in install_cmds {
             println!("   {} cmd `{}`", colour!(blue, "=>"), colour!(amber, "{}", &command));
-            let install_cmd = Command::new("fish")
+            let install_cmd = Command::new(&config.shell)
                .stderr(Stdio::inherit())
                .stdout(Stdio::inherit())
                .args(&["-c", command])
@@ -69,14 +68,14 @@ impl EggItem {
       Ok(())
    }
 
-   pub fn update(&self) -> Result<(), BirdError> {
+   pub fn update(&self, config: &BirdConfig) -> Result<(), BirdError> {
       println!("{} {}", colour!(blue, "Updating",), colour!(green, "{}", &self.name));
 
       if let Some(update_cmds) = &self.update {
          println!("{} Running update commands", colour!(green, "=>"));
          for command in update_cmds {
             println!("   {} cmd `{}`", colour!(blue, "=>"), colour!(amber, "{}", &command));
-            let install_cmd = Command::new("fish")
+            let install_cmd = Command::new(&config.shell)
                .stderr(Stdio::inherit())
                .stdout(Stdio::inherit())
                .args(&["-c", command])
@@ -99,7 +98,7 @@ impl EggItem {
       Ok(())
    }
 
-   pub fn uninstall(&self) -> Result<(), BirdError> {
+   pub fn uninstall(&self, config: &BirdConfig) -> Result<(), BirdError> {
       println!(
          "{} {}",
          colour!(blue, "Uninstalling",),
@@ -110,7 +109,7 @@ impl EggItem {
          println!("{} Running uninstall commands", colour!(green, "=>"));
          for command in uninstall_cmds {
             println!("   {} cmd `{}`", colour!(blue, "=>"), colour!(amber, "{}", &command));
-            let install_cmd = Command::new("fish")
+            let install_cmd = Command::new(&config.shell)
                .stderr(Stdio::inherit())
                .stdout(Stdio::inherit())
                .args(&["-c", command])
