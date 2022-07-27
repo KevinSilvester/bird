@@ -33,7 +33,7 @@ function install_bird () {
 
    ## INSTALL PROGRAM
    echo -e "\nInstalling bird"
-   [ -d "$HOME/.local/bin" ] && mkdir - "$HOME/.local/bin"
+   [ ! -d "$HOME/.local/bin" ] && mkdir - "$HOME/.local/bin"
    [ -f "$HOME/.loca/bin/bird" ] && rm "$HOME/.loca/bin/bird"
    mv bird ~/.local/bin
 
