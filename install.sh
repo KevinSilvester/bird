@@ -38,7 +38,7 @@ function install_bird () {
    mv bird ~/.local/bin
 
 
-   ## FINISH INSTALL
+   ## CHECK PATH
    if [[ ! ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
      echo -e "\nAdd '~/.local/bin' to you PATH to use bird"
    fi
