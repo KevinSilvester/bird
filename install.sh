@@ -46,6 +46,6 @@ function install_bird () {
    cd $USR_DIR
 }
 
-install_bird /
-   && echo -e "\nbird install complete! 😄"
+install_bird \
+   && echo -e "\nbird install complete! 😄" \
    || echo -e "\nbird install failed! ☹️"
