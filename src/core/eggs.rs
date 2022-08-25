@@ -32,8 +32,8 @@ impl EggItem {
                .stderr(Stdio::inherit())
                .stdout(Stdio::inherit())
                .args(&["-c", command])
-               .status()
-               .expect(&format!("command '{}' failed", command));
+               .status();
+               // .expect(&format!("command '{}' failed", command));
 
             if !preinstall_cmd.success() {
                return Err(BirdError::CommandFailed(command.to_owned()));
@@ -49,8 +49,8 @@ impl EggItem {
                .stderr(Stdio::inherit())
                .stdout(Stdio::inherit())
                .args(&["-c", command])
-               .status()
-               .expect(&format!("command '{}' failed", command));
+               .status();
+               // .expect(&format!("command '{}' failed", command));
 
             if !install_cmd.success() {
                return Err(BirdError::CommandFailed(command.to_owned()));
@@ -79,8 +79,8 @@ impl EggItem {
                .stderr(Stdio::inherit())
                .stdout(Stdio::inherit())
                .args(&["-c", command])
-               .status()
-               .expect(&format!("command '{}' failed", command));
+               .status();
+               // .expect(&format!("command '{}' failed", command));
 
             if !install_cmd.success() {
                return Err(BirdError::CommandFailed(command.to_owned()));
@@ -113,8 +113,8 @@ impl EggItem {
                .stderr(Stdio::inherit())
                .stdout(Stdio::inherit())
                .args(&["-c", command])
-               .status()
-               .expect(&format!("command '{}' failed", command));
+               .status();
+               // .expect(&format!("command '{}' failed", command));
 
             if !install_cmd.success() {
                return Err(BirdError::CommandFailed(command.to_owned()));
