@@ -7,7 +7,9 @@ An installation organizer of sorts.
 curl -s "https://raw.githubusercontent.com/KevinSilvester/bird/main/install.sh" | bash
 ```
 
-### TODO:
+***
+
+## TODO:
 - [ ] WRITE TESTS!!!!
 - [ ] Add skip pre-install option to install command
 - [ ] Add force option to install, update and uninstall
