@@ -12,8 +12,8 @@ curl -s "https://raw.githubusercontent.com/KevinSilvester/bird/main/install.sh" 
 - [ ] Add skip pre-install option to install command
 - [ ] Add force option to install, update and uninstall
 - [ ] Create 'init' command to generate eggs file
-- [ ] Create 'add' command
-   - [ ] Add all commands (install, pre-install, update, uninstall) interactively
+- [ ] Create 'add' command to add program to eggs file
+   - [ ] Add all instruction (install, pre-install, update, uninstall) interactively
    - [ ] Add specific commands
    - [ ] Skip adding specific command
    - [ ] Run specific command after adding
