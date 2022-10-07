@@ -11,6 +11,7 @@ curl -s "https://raw.githubusercontent.com/KevinSilvester/bird/main/install.sh" 
 
 ## TODO:
 - [ ] WRITE TESTS!!!!
+- [ ] migrate to clap v5
 - [ ] Add skip pre-install option to install command
 - [ ] Add force option to install, update and uninstall
 - [ ] Create 'init' command to generate eggs file
